@@ -80,17 +80,16 @@ public class MainActivity extends AppCompatActivity {
                     connection.setConnectTimeout(8000);
                     connection.setReadTimeout(8000);
 
-                    if(connection.getResponseCode()==200){
+                    if (connection.getResponseCode() == 200) {
                         inputStream = connection.getInputStream();
 
                         reader = new BufferedReader(new InputStreamReader(inputStream));
                         StringBuilder response = new StringBuilder();
-//                    connection.setRequestProperty("Content-type", "application/json");
 
                         String line;
                         while ((line = reader.readLine()) != null) {
                             response.append(line);
-                                parseJSONWithJSONObject(response.toString());
+                            parseJSONWithJSONObject(response.toString());
                             initData();
                             inputStream.close();
                         }
@@ -116,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void parseJSONWithJSONObject(String jsonData) {
         try {
-            JSONObject jsonObject=new JSONObject(jsonData);
+            JSONObject jsonObject = new JSONObject(jsonData);
             JSONArray jsonArray = new JSONArray(jsonObject.getString("data"));
             for (int i = 0; i < jsonArray.length(); i++) {
 
