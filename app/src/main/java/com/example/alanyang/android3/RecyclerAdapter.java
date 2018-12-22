@@ -12,7 +12,6 @@ import java.util.List;
 
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHolder> {
     private List<Data> datas;
-    private Context mContext;
 
     public RecyclerAdapter(List<Data> datas) {
         this.datas = datas;

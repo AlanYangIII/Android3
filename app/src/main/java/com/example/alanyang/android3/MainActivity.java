@@ -26,6 +26,8 @@ public class MainActivity extends AppCompatActivity {
     private List<Data> dataList = new ArrayList<>();
     EditText editText;
     private String text;
+    RecyclerAdapter recyclerAdapter;
+    Button sendRequest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,18 +41,16 @@ public class MainActivity extends AppCompatActivity {
 
         recyclerView.setLayoutManager(manager);
 
-        RecyclerAdapter recyclerAdapter = new RecyclerAdapter(dataList);
+        recyclerAdapter = new RecyclerAdapter(dataList);
 
         recyclerView.setAdapter(recyclerAdapter);
 
-
-        Button sendRequest = findViewById(R.id.send_request);
+        sendRequest = findViewById(R.id.send_request);
         sendRequest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (v.getId() == R.id.send_request) {
                     sendRequestWithHttpURLConnection();
-                    initData();
                 }
             }
         });
@@ -64,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void sendRequestWithHttpURLConnection() {
+        editText = findViewById(R.id.book);
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -71,25 +72,29 @@ public class MainActivity extends AppCompatActivity {
                 HttpURLConnection connection = null;
                 BufferedReader reader = null;
                 InputStream inputStream = null;
+                String address = "https://www.apiopen.top/novelSearchApi?name=" + editText.getText().toString();
                 try {
-                    URL url = new URL("https://www.apiopen.top/novelSearchApi?name=" + editText.getText().toString());
+                    URL url = new URL(address);
                     connection = (HttpURLConnection) url.openConnection();
                     connection.setRequestMethod("GET");
                     connection.setConnectTimeout(8000);
                     connection.setReadTimeout(8000);
-                    inputStream = connection.getInputStream();
-                    reader = new BufferedReader(new InputStreamReader(inputStream));
-                    StringBuilder response = new StringBuilder();
+
+                    if(connection.getResponseCode()==200){
+                        inputStream = connection.getInputStream();
+
+                        reader = new BufferedReader(new InputStreamReader(inputStream));
+                        StringBuilder response = new StringBuilder();
 //                    connection.setRequestProperty("Content-type", "application/json");
 
-                    editText = findViewById(R.id.book);
-                    parseJSONWithJSONObject(response.toString());
-
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        response.append(line);
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            response.append(line);
+                                parseJSONWithJSONObject(response.toString());
+                            initData();
+                            inputStream.close();
+                        }
                     }
-                    inputStream.close();
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -111,15 +116,18 @@ public class MainActivity extends AppCompatActivity {
 
     private void parseJSONWithJSONObject(String jsonData) {
         try {
-            JSONArray jsonArray = new JSONArray(jsonData);
+            JSONObject jsonObject=new JSONObject(jsonData);
+            JSONArray jsonArray = new JSONArray(jsonObject.getString("data"));
             for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                text = jsonObject.getString("data");
+
+                text = jsonArray.get(i).toString();
+                Data data = new Data(text);
+                dataList.add(data);
             }
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    RecyclerAdapter.notifyDataSetChanged();
+                    recyclerAdapter.notifyDataSetChanged();
                 }
             });
 
